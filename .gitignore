@@ -1,0 +1,11 @@
+# Googleの認証情報(絶対にGitHubに上げない)
+credentials.json
+
+# 環境変数ファイル(スプレッドシートIDなどの個人設定。絶対にGitHubに上げない)
+.env
+
+# Python関連
+__pycache__/
+*.pyc
+venv/
+.venv/

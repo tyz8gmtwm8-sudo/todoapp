@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ "編集" if todo else "新規登録" }} - やることリスト</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 16px;
+            color: #222;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        textarea {
+            height: 120px;
+        }
+        .buttons {
+            margin-top: 24px;
+        }
+        button {
+            padding: 8px 20px;
+            background: #2d7ff9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ "やることを編集" if todo else "やることを登録" }}</h1>
+
+    <form method="post" action="{{ action_url }}">
+        <label for="title">タイトル</label>
+        <input type="text" id="title" name="title" required
+               value="{{ todo.title if todo else '' }}">
+
+        <label for="content">内容</label>
+        <textarea id="content" name="content">{{ todo.content if todo else '' }}</textarea>
+
+        <label for="due_date">期日</label>
+        <input type="date" id="due_date" name="due_date" required
+               value="{{ todo.due_date if todo else '' }}">
+
+        <div class="buttons">
+            <button type="submit">{{ "更新する" if todo else "登録する" }}</button>
+        </div>
+    </form>
+
+    <a class="back-link" href="{{ url_for('index') }}">← 一覧に戻る</a>
+</body>
+</html>
