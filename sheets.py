@@ -26,9 +26,13 @@ SPREADSHEET_ID = os.environ.get("SPREADSHEET_ID")
 
 HEADERS = ["id", "title", "content", "due_date", "done"]
 
+# 目標(今月の目標・来年の目標)を保存するシートのヘッダー
+# category列には "month"(今月の目標) か "year"(来年の目標) が入る
+GOAL_HEADERS = ["id", "category", "title", "why", "how"]
 
-def _get_worksheet():
-    """認証を行い、スプレッドシートの1枚目のシート(worksheet)を取得する"""
+
+def _get_spreadsheet():
+    """認証を行い、スプレッドシート全体(ブック)を取得する"""
     if not SPREADSHEET_ID:
         raise RuntimeError(
             "環境変数 SPREADSHEET_ID が設定されていません。"
@@ -39,12 +43,32 @@ def _get_worksheet():
         CREDENTIALS_FILE, scopes=SCOPES
     )
     client = gspread.authorize(credentials)
-    spreadsheet = client.open_by_key(SPREADSHEET_ID)
-    worksheet = spreadsheet.sheet1
+    return client.open_by_key(SPREADSHEET_ID)
+
+
+def _get_worksheet():
+    """やること一覧を保存している、1枚目のシート(worksheet)を取得する"""
+    worksheet = _get_spreadsheet().sheet1
 
     # ヘッダー行が無い(真っ白な)スプレッドシートの場合は、自動で作る
     if worksheet.row_values(1) != HEADERS:
         worksheet.update("A1", [HEADERS])
+
+    return worksheet
+
+
+def _get_goals_worksheet():
+    """目標を保存している「goals」シートを取得する(無ければ自動で作成する)"""
+    spreadsheet = _get_spreadsheet()
+    try:
+        worksheet = spreadsheet.worksheet("goals")
+    except gspread.exceptions.WorksheetNotFound:
+        worksheet = spreadsheet.add_worksheet(
+            title="goals", rows=200, cols=len(GOAL_HEADERS)
+        )
+
+    if worksheet.row_values(1) != GOAL_HEADERS:
+        worksheet.update("A1", [GOAL_HEADERS])
 
     return worksheet
 
@@ -103,3 +127,27 @@ def toggle_done(todo_id):
     current = worksheet.cell(cell.row, done_column).value
     new_value = "FALSE" if current == "TRUE" else "TRUE"
     worksheet.update_cell(cell.row, done_column, new_value)
+
+
+def get_goals(category):
+    """指定したcategory("month"または"year")の目標一覧を取得する"""
+    worksheet = _get_goals_worksheet()
+    records = worksheet.get_all_records()
+    return [goal for goal in records if goal["category"] == category]
+
+
+def add_goal(category, title, why, how):
+    """新しい目標を1件、goalsシートに追加する"""
+    worksheet = _get_goals_worksheet()
+    new_id = str(uuid.uuid4())
+    worksheet.append_row([new_id, category, title, why, how])
+    return new_id
+
+
+def delete_goal(goal_id):
+    """idを指定して、目標を1件削除する"""
+    worksheet = _get_goals_worksheet()
+    cell = worksheet.find(str(goal_id), in_column=1)
+    if cell is None:
+        raise ValueError(f"id={goal_id} の目標が見つかりません。")
+    worksheet.delete_rows(cell.row)

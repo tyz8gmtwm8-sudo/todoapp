@@ -7,11 +7,14 @@ Flaskとは:
     関数ごとに書いていきます。
 
 このアプリのページ構成:
-    GET  /            … 登録済みのやること一覧を表示するページ
-    GET  /new         … 新規登録用のフォームを表示するページ
-    POST /new         … フォームの内容をスプレッドシートに登録する処理
-    GET  /edit/<id>   … 編集用のフォームを表示するページ
-    POST /edit/<id>   … フォームの内容でスプレッドシートを更新する処理
+    GET  /              … 目標・やること一覧を表示するページ
+    GET  /new           … 新規登録用のフォームを表示するページ
+    POST /new           … フォームの内容をスプレッドシートに登録する処理
+    GET  /edit/<id>     … 編集用のフォームを表示するページ
+    POST /edit/<id>     … フォームの内容でスプレッドシートを更新する処理
+    GET  /goals/new     … 目標の新規登録用フォームを表示するページ
+    POST /goals/new     … フォームの内容を目標としてスプレッドシートに登録する処理
+    POST /goals/delete/<id> … 目標を削除する処理
 """
 
 import os
@@ -29,10 +32,17 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    """やること一覧ページ(期日が近い順に並び替えて表示する)"""
+    """目標・やること一覧ページ(やることは期日が近い順に並び替えて表示する)"""
     todos = sheets.get_all_todos()
     todos = sorted(todos, key=lambda todo: todo.get("due_date") or "")
-    return render_template("index.html", todos=todos)
+    monthly_goals = sheets.get_goals("month")
+    yearly_goals = sheets.get_goals("year")
+    return render_template(
+        "index.html",
+        todos=todos,
+        monthly_goals=monthly_goals,
+        yearly_goals=yearly_goals,
+    )
 
 
 @app.route("/new", methods=["GET", "POST"])
@@ -79,6 +89,27 @@ def delete_todo(todo_id):
 def toggle_todo(todo_id):
     """完了/未完了を切り替える処理(一覧ページのチェックボックスから呼ばれる)"""
     sheets.toggle_done(todo_id)
+    return redirect(url_for("index"))
+
+
+@app.route("/goals/new", methods=["GET", "POST"])
+def new_goal():
+    """目標の新規登録ページ(今月の目標・来年の目標に共通)"""
+    if request.method == "POST":
+        category = request.form["category"]
+        title = request.form["title"]
+        why = request.form["why"]
+        how = request.form["how"]
+        sheets.add_goal(category, title, why, how)
+        return redirect(url_for("index"))
+
+    return render_template("goal_form.html")
+
+
+@app.route("/goals/delete/<goal_id>", methods=["POST"])
+def delete_goal(goal_id):
+    """目標を削除する処理"""
+    sheets.delete_goal(goal_id)
     return redirect(url_for("index"))
 
 

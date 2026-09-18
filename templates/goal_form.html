@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>目標を登録 - やることリスト</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 16px;
+            color: #5b4636;
+            background: #fff8f0;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            font-weight: normal;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            font-weight: normal;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            border: 1px solid #f0d3ba;
+            border-radius: 4px;
+            background: #fffdfb;
+            color: #5b4636;
+        }
+        textarea {
+            height: 90px;
+        }
+        .buttons {
+            margin-top: 24px;
+        }
+        button {
+            padding: 8px 20px;
+            background: #e8956a;
+            color: #4a372e;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: #9c8170;
+        }
+    </style>
+</head>
+<body>
+    <h1>目標を登録</h1>
+
+    <form method="post" action="{{ url_for('new_goal') }}">
+        <label>種類</label>
+        <div class="radio-group">
+            <label><input type="radio" name="category" value="month" checked> 今月の目標</label>
+            <label><input type="radio" name="category" value="year"> 来年の目標</label>
+        </div>
+
+        <label for="title">目標</label>
+        <input type="text" id="title" name="title" required placeholder="例: 毎日30分読書する">
+
+        <label for="why">なぜ達成したいのか</label>
+        <textarea id="why" name="why" placeholder="例: 知識を増やして仕事に活かしたいから"></textarea>
+
+        <label for="how">達成するためにはどうするのか</label>
+        <textarea id="how" name="how" placeholder="例: 通勤時間に本を読む習慣をつける"></textarea>
+
+        <div class="buttons">
+            <button type="submit">登録する</button>
+        </div>
+    </form>
+
+    <a class="back-link" href="{{ url_for('index') }}">← 一覧に戻る</a>
+</body>
+</html>

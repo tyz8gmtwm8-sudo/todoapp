@@ -69,10 +69,141 @@
         input[type="checkbox"] {
             accent-color: #e8956a;
         }
+        .new-button.small {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+        .goals-section {
+            margin-bottom: 28px;
+        }
+        .goals-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .goals-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .goal-columns {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .goal-group {
+            flex: 1;
+            min-width: 240px;
+            background: #fffdfb;
+            border: 1px solid #f0d3ba;
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+        .goal-group h3 {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+            color: #c1622e;
+        }
+        .goal-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .goal-list li {
+            border-bottom: 1px dashed #f0d3ba;
+            padding-bottom: 8px;
+        }
+        .goal-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .goal-list summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .goal-list summary::marker {
+            color: #e8956a;
+        }
+        .goal-detail {
+            margin: 6px 0 0;
+            font-size: 0.9rem;
+            color: #9c8170;
+        }
+        .goal-detail strong {
+            color: #5b4636;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #f0d3ba;
+            margin: 28px 0;
+        }
+        .section-title {
+            margin: 0 0 12px;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
     <h1>やることリスト</h1>
+
+    <section class="goals-section">
+        <div class="goals-header">
+            <h2>目標</h2>
+            <a class="new-button small" href="{{ url_for('new_goal') }}">＋ 目標を追加</a>
+        </div>
+        <div class="goal-columns">
+            <div class="goal-group">
+                <h3>今月の目標</h3>
+                {% if monthly_goals %}
+                <ul class="goal-list">
+                    {% for goal in monthly_goals %}
+                    <li>
+                        <details>
+                            <summary>{{ goal.title }}</summary>
+                            <p class="goal-detail"><strong>なぜ:</strong> {{ goal.why }}</p>
+                            <p class="goal-detail"><strong>どうやって:</strong> {{ goal.how }}</p>
+                            <form class="delete-form" method="post" action="{{ url_for('delete_goal', goal_id=goal.id) }}" onsubmit="return confirm('「{{ goal.title }}」を削除します。よろしいですか？');">
+                                <button type="submit" class="delete-btn">削除</button>
+                            </form>
+                        </details>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="empty">まだ目標がありません。</p>
+                {% endif %}
+            </div>
+            <div class="goal-group">
+                <h3>来年の目標</h3>
+                {% if yearly_goals %}
+                <ul class="goal-list">
+                    {% for goal in yearly_goals %}
+                    <li>
+                        <details>
+                            <summary>{{ goal.title }}</summary>
+                            <p class="goal-detail"><strong>なぜ:</strong> {{ goal.why }}</p>
+                            <p class="goal-detail"><strong>どうやって:</strong> {{ goal.how }}</p>
+                            <form class="delete-form" method="post" action="{{ url_for('delete_goal', goal_id=goal.id) }}" onsubmit="return confirm('「{{ goal.title }}」を削除します。よろしいですか？');">
+                                <button type="submit" class="delete-btn">削除</button>
+                            </form>
+                        </details>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="empty">まだ目標がありません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <hr class="divider">
+
+    <h2 class="section-title">やること一覧</h2>
     <a class="new-button" href="{{ url_for('new_todo') }}">＋ 新しいやることを登録</a>
 
     {% if todos %}
