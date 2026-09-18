@@ -24,7 +24,7 @@ SCOPES = [
 CREDENTIALS_FILE = os.environ.get("GOOGLE_CREDENTIALS_FILE", "credentials.json")
 SPREADSHEET_ID = os.environ.get("SPREADSHEET_ID")
 
-HEADERS = ["id", "title", "content", "due_date"]
+HEADERS = ["id", "title", "content", "due_date", "done"]
 
 
 def _get_worksheet():
@@ -65,10 +65,10 @@ def get_todo(todo_id):
 
 
 def add_todo(title, content, due_date):
-    """新しいやることを1件、スプレッドシートに追加する"""
+    """新しいやることを1件、スプレッドシートに追加する(登録直後は「未完了」)"""
     worksheet = _get_worksheet()
     new_id = str(uuid.uuid4())  # 他と絶対に被らないID(UUID)を発行する
-    worksheet.append_row([new_id, title, content, due_date])
+    worksheet.append_row([new_id, title, content, due_date, "FALSE"])
     return new_id
 
 
@@ -81,3 +81,25 @@ def update_todo(todo_id, title, content, due_date):
 
     row = cell.row
     worksheet.update(f"A{row}:D{row}", [[todo_id, title, content, due_date]])
+
+
+def delete_todo(todo_id):
+    """idを指定して、やることを1件削除する"""
+    worksheet = _get_worksheet()
+    cell = worksheet.find(str(todo_id), in_column=1)
+    if cell is None:
+        raise ValueError(f"id={todo_id} のデータが見つかりません。")
+    worksheet.delete_rows(cell.row)
+
+
+def toggle_done(todo_id):
+    """idを指定して、完了/未完了の状態を反転させる(チェックリストのチェック操作)"""
+    worksheet = _get_worksheet()
+    cell = worksheet.find(str(todo_id), in_column=1)
+    if cell is None:
+        raise ValueError(f"id={todo_id} のデータが見つかりません。")
+
+    done_column = HEADERS.index("done") + 1  # gspreadの列番号は1始まり
+    current = worksheet.cell(cell.row, done_column).value
+    new_value = "FALSE" if current == "TRUE" else "TRUE"
+    worksheet.update_cell(cell.row, done_column, new_value)

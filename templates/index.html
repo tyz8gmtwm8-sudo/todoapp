@@ -41,9 +41,27 @@
         }
         .edit-link {
             color: #2d7ff9;
+            margin-right: 12px;
         }
         .empty {
             color: #777;
+        }
+        tr.done .title-cell,
+        tr.done .content-cell {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .delete-form {
+            display: inline;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #d9363e;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -55,6 +73,7 @@
     <table>
         <thead>
             <tr>
+                <th>完了</th>
                 <th>タイトル</th>
                 <th>内容</th>
                 <th>期日</th>
@@ -63,11 +82,21 @@
         </thead>
         <tbody>
             {% for todo in todos %}
-            <tr>
-                <td>{{ todo.title }}</td>
+            <tr class="{{ 'done' if todo.done == 'TRUE' else '' }}">
+                <td>
+                    <form class="delete-form" method="post" action="{{ url_for('toggle_todo', todo_id=todo.id) }}">
+                        <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if todo.done == 'TRUE' else '' }}>
+                    </form>
+                </td>
+                <td class="title-cell">{{ todo.title }}</td>
                 <td class="content-cell">{{ todo.content }}</td>
                 <td>{{ todo.due_date }}</td>
-                <td><a class="edit-link" href="{{ url_for('edit_todo', todo_id=todo.id) }}">編集</a></td>
+                <td>
+                    <a class="edit-link" href="{{ url_for('edit_todo', todo_id=todo.id) }}">編集</a>
+                    <form class="delete-form" method="post" action="{{ url_for('delete_todo', todo_id=todo.id) }}" onsubmit="return confirm('「{{ todo.title }}」を削除します。よろしいですか？');">
+                        <button type="submit" class="delete-btn">削除</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

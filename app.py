@@ -29,8 +29,9 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    """やること一覧ページ"""
+    """やること一覧ページ(期日が近い順に並び替えて表示する)"""
     todos = sheets.get_all_todos()
+    todos = sorted(todos, key=lambda todo: todo.get("due_date") or "")
     return render_template("index.html", todos=todos)
 
 
@@ -65,6 +66,20 @@ def edit_todo(todo_id):
     return render_template(
         "form.html", todo=todo, action_url=url_for("edit_todo", todo_id=todo_id)
     )
+
+
+@app.route("/delete/<todo_id>", methods=["POST"])
+def delete_todo(todo_id):
+    """やることを削除する処理(一覧ページの「削除」ボタンから呼ばれる)"""
+    sheets.delete_todo(todo_id)
+    return redirect(url_for("index"))
+
+
+@app.route("/toggle/<todo_id>", methods=["POST"])
+def toggle_todo(todo_id):
+    """完了/未完了を切り替える処理(一覧ページのチェックボックスから呼ばれる)"""
+    sheets.toggle_done(todo_id)
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
