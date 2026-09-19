@@ -54,6 +54,13 @@
             text-decoration: line-through;
             color: #c9b8a8;
         }
+        tr.overdue {
+            background: #fbe2e0;
+        }
+        tr.overdue td {
+            color: #a02b23;
+            font-weight: bold;
+        }
         .delete-form {
             display: inline;
         }
@@ -219,7 +226,7 @@
         </thead>
         <tbody>
             {% for todo in todos %}
-            <tr class="{{ 'done' if todo.done == 'TRUE' else '' }}">
+            <tr class="{{ 'done' if todo.done == 'TRUE' else '' }} {{ 'overdue' if todo.overdue else '' }}">
                 <td>
                     <form class="delete-form" method="post" action="{{ url_for('toggle_todo', todo_id=todo.id) }}">
                         <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if todo.done == 'TRUE' else '' }}>

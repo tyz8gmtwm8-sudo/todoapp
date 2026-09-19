@@ -18,6 +18,7 @@ Flaskとは:
 """
 
 import os
+from datetime import date
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, url_for
@@ -32,9 +33,27 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    """目標・やること一覧ページ(やることは期日が近い順に並び替えて表示する)"""
+    """目標・やること一覧ページ(やることは期日が近い順に並び替えて表示する)
+
+    - 完了済み(done)で、かつ期日が過ぎたものは一覧から非表示にする
+    - 未完了で、かつ期日が過ぎたものには「overdue」の目印を付ける(赤色で表示するため)
+    """
+    today = date.today().isoformat()  # 例: "2026-09-19" (due_dateと同じYYYY-MM-DD形式)
+
     todos = sheets.get_all_todos()
-    todos = sorted(todos, key=lambda todo: todo.get("due_date") or "")
+    visible_todos = []
+    for todo in todos:
+        is_done = todo.get("done") == "TRUE"
+        due_date = todo.get("due_date") or ""
+        is_overdue = bool(due_date) and due_date < today
+
+        if is_done and is_overdue:
+            continue  # 完了済み・期日切れは画面から消す
+
+        todo["overdue"] = (not is_done) and is_overdue
+        visible_todos.append(todo)
+
+    todos = sorted(visible_todos, key=lambda todo: todo.get("due_date") or "")
     monthly_goals = sheets.get_goals("month")
     yearly_goals = sheets.get_goals("year")
     return render_template(
